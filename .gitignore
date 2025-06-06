@@ -1,0 +1,5 @@
+# Backend (PHP)
+backend/vendor/
+backend/.env
+backend/*.log
+backend/logs/

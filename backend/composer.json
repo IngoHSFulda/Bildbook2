@@ -1,0 +1,19 @@
+{
+    "name": "startklar/backend",
+    "description": "Configuration PHP Composer",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Startklar\\Backend\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ingo Schwarzhaupt",
+            "email": "ingo.schwarzhaupt@gmail.com"
+        }
+    ],
+    "require-dev": {
+        "phpunit/phpunit": "^11.5"
+    }
+}

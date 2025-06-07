@@ -1,11 +1,15 @@
 import './style.css';
 
 const appDiv = document.querySelector<HTMLDivElement>('#app');
-if (!appDiv) throw new Error('Kein #app Element gefunden');
+if (!appDiv) {
+  throw new Error('Kein #app Element gefunden');
+}
 
+// Der Rest des Codes kann dann mit appDiv arbeiten, ohne dass TypeScript meckert.
 let username = '';
 
 function renderLoginForm() {
+  if (!appDiv) return; // Fallback (sollte aber nie null sein, weil wir oben prüfen)
   appDiv.innerHTML = `
     <div>
       <h1>Login</h1>
@@ -35,7 +39,7 @@ function renderLoginForm() {
       try {
         const response = await fetch('http://localhost:8000/login.php', {
           method: 'POST',
-          credentials: 'include', // wichtig für Session-Cookies!
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           },
@@ -46,11 +50,9 @@ function renderLoginForm() {
         });
 
         if (response.ok) {
-          // Erfolgreicher Login
           username = usernameInput;
           renderLoggedIn();
         } else {
-          // Fehlerhafte Logindaten oder Serverfehler
           const errorText = await response.text();
           const errorElement = document.querySelector<HTMLParagraphElement>('#error');
           if (errorElement) {
@@ -73,9 +75,7 @@ function renderLoginForm() {
 }
 
 function renderLoggedIn() {
-  if (!appDiv) {
-    throw new Error('Kein #app Element gefunden');
-  }
+  if (!appDiv) return; // Fallback
   appDiv.innerHTML = `
     <div>
       <h1>Willkommen, ${username}!</h1>
@@ -91,7 +91,7 @@ function renderLoggedIn() {
           credentials: 'include'
         });
       } catch {
-        // Fehler ignorieren
+        // Ignorieren
       }
       username = '';
       renderLoginForm();
@@ -99,5 +99,5 @@ function renderLoggedIn() {
   }
 }
 
-// Starte mit dem Login-Formular
+// Initial-Render
 renderLoginForm();

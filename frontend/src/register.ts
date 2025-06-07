@@ -6,7 +6,7 @@ if (!appDiv) {
 }
 
 function renderRegisterForm() {
-  appDiv.innerHTML = `
+  appDiv!.innerHTML = `
     <div>
       <h1>Registrierung</h1>
       <form id="registerForm">

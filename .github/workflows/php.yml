@@ -67,4 +67,3 @@ jobs:
         run: |
           cd backend
           ./vendor/bin/phpcs --standard=PSR12 src/
-          

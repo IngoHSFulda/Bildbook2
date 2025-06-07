@@ -1,4 +1,5 @@
 <?php
+
 // CORS-Header erlauben (nur für Dev-Umgebung)
 header('Access-Control-Allow-Origin: http://localhost:5174');
 header('Access-Control-Allow-Credentials: true');

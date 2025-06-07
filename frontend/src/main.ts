@@ -5,11 +5,10 @@ if (!appDiv) {
   throw new Error('Kein #app Element gefunden');
 }
 
-// Der Rest des Codes kann dann mit appDiv arbeiten, ohne dass TypeScript meckert.
 let username = '';
 
 function renderLoginForm() {
-  if (!appDiv) return; // Fallback (sollte aber nie null sein, weil wir oben prüfen)
+  if (!appDiv) return;
   appDiv.innerHTML = `
     <div>
       <h1>Login</h1>
@@ -24,6 +23,7 @@ function renderLoginForm() {
         </div>
         <button type="submit">Login</button>
       </form>
+      <button id="registerBtn">Registrieren</button>
       <p id="error" style="color: red;"></p>
     </div>
   `;
@@ -39,7 +39,7 @@ function renderLoginForm() {
       try {
         const response = await fetch('http://localhost:8000/login.php', {
           method: 'POST',
-          credentials: 'include',
+          credentials: 'include', // wichtig für Session-Cookies
           headers: {
             'Content-Type': 'application/json'
           },
@@ -72,10 +72,17 @@ function renderLoginForm() {
       }
     });
   }
+
+  const registerBtn = document.querySelector<HTMLButtonElement>('#registerBtn');
+  if (registerBtn) {
+    registerBtn.addEventListener('click', () => {
+      window.location.href = '/register.html';
+    });
+  }
 }
 
 function renderLoggedIn() {
-  if (!appDiv) return; // Fallback
+  if (!appDiv) return;
   appDiv.innerHTML = `
     <div>
       <h1>Willkommen, ${username}!</h1>

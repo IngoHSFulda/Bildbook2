@@ -1,6 +1,8 @@
 <?php
 
 require_once __DIR__ . '/../config/Database.php';
+// src/index.php
+echo "Hello, World! CI/CD Test!";
 
 // Verbindung herstellen
 $database = new Database();

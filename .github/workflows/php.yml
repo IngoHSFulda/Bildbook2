@@ -13,20 +13,56 @@ on:
 jobs:
   php-tests:
     runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: geheim
+          MYSQL_DATABASE: facebook_images
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
       - uses: actions/checkout@v3
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
+          extensions: pdo_mysql
+
+      - name: Wait for MySQL to be ready
+        run: |
+          sudo apt-get install -y mysql-client
+          until mysqladmin ping -h 127.0.0.1 -uroot -pgeheim --silent; do
+            echo "Waiting for MySQL..."
+            sleep 3
+          done
+
+      - name: Create .env file
+        run: |
+          cd backend
+          echo "DB_HOST=127.0.0.1" > .env
+          echo "DB_NAME=facebook_images" >> .env
+          echo "DB_USER=root" >> .env
+          echo "DB_PASS=geheim" >> .env
+
       - name: Install Composer dependencies
         run: |
           cd backend
           composer install
+
       - name: Run PHPUnit tests
         run: |
           cd backend
           ./vendor/bin/phpunit
+
       - name: Run PHP_CodeSniffer (PSR-12)
         run: |
           cd backend

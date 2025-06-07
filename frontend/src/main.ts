@@ -3,7 +3,6 @@ import './style.css';
 const appDiv = document.querySelector<HTMLDivElement>('#app');
 if (!appDiv) throw new Error('Kein #app Element gefunden');
 
-let isLoggedIn = false;
 let username = '';
 
 function renderLoginForm() {
@@ -36,7 +35,7 @@ function renderLoginForm() {
       try {
         const response = await fetch('http://localhost:8000/login.php', {
           method: 'POST',
-          credentials: 'include', // für Session-Cookies
+          credentials: 'include', // wichtig für Session-Cookies!
           headers: {
             'Content-Type': 'application/json'
           },
@@ -47,22 +46,36 @@ function renderLoginForm() {
         });
 
         if (response.ok) {
-          const data = await response.json();
-          isLoggedIn = true;
+          // Erfolgreicher Login
           username = usernameInput;
           renderLoggedIn();
         } else {
-          const errorData = await response.json();
-          document.querySelector<HTMLParagraphElement>('#error')!.textContent = errorData.error || 'Login fehlgeschlagen';
+          // Fehlerhafte Logindaten oder Serverfehler
+          const errorText = await response.text();
+          const errorElement = document.querySelector<HTMLParagraphElement>('#error');
+          if (errorElement) {
+            try {
+              const errorData = JSON.parse(errorText);
+              errorElement.textContent = errorData.error || 'Login fehlgeschlagen';
+            } catch {
+              errorElement.textContent = 'Unbekannter Fehler: ' + errorText;
+            }
+          }
         }
       } catch (error) {
-        document.querySelector<HTMLParagraphElement>('#error')!.textContent = 'Serverfehler: ' + (error as Error).message;
+        const errorElement = document.querySelector<HTMLParagraphElement>('#error');
+        if (errorElement) {
+          errorElement.textContent = 'Netzwerkfehler oder Server nicht erreichbar: ' + (error as Error).message;
+        }
       }
     });
   }
 }
 
 function renderLoggedIn() {
+  if (!appDiv) {
+    throw new Error('Kein #app Element gefunden');
+  }
   appDiv.innerHTML = `
     <div>
       <h1>Willkommen, ${username}!</h1>
@@ -73,16 +86,18 @@ function renderLoggedIn() {
   const logoutBtn = document.querySelector<HTMLButtonElement>('#logoutBtn');
   if (logoutBtn) {
     logoutBtn.addEventListener('click', async () => {
-      await fetch('http://localhost:8000/logout.php', {
-        credentials: 'include'
-      });
-      isLoggedIn = false;
+      try {
+        await fetch('http://localhost:8000/logout.php', {
+          credentials: 'include'
+        });
+      } catch {
+        // Fehler ignorieren
+      }
       username = '';
       renderLoginForm();
     });
   }
 }
 
-// Initial-Render
+// Starte mit dem Login-Formular
 renderLoginForm();
-

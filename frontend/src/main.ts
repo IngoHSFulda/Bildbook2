@@ -1,112 +1,113 @@
 import './style.css';
 
 const appDiv = document.querySelector<HTMLDivElement>('#app');
-if (!appDiv) {
-  throw new Error('Kein #app Element gefunden');
-}
+if (!appDiv) throw new Error('Kein #app Element gefunden');
 
-// Ab hier weiß TypeScript: appDiv ist **definitiv** vorhanden
 let username = '';
 
-function renderLoginForm() {
-  appDiv!.innerHTML = `
-    <div>
-      <h1>Login</h1>
-      <form id="loginForm">
-        <div>
-          <label for="username">Benutzername:</label>
-          <input type="text" id="username" name="username" required>
-        </div>
-        <div>
-          <label for="password">Passwort:</label>
-          <input type="password" id="password" name="password" required>
-        </div>
-        <button type="submit">Login</button>
-      </form>
-      <button id="registerBtn">Registrieren</button>
-      <p id="error" style="color: red;"></p>
+function renderLayout() {
+  appDiv.innerHTML = `
+    <div id="container">
+      <nav id="sidebar">
+        <h2>Navigation</h2>
+        <ul>
+          <li><button id="navHome">Startseite</button></li>
+          <li><button id="navGallery">Meine Galerie</button></li>
+          <li><button id="navUpload">Bilder hochladen</button></li>
+          <li><button id="navProfile">Profil</button></li>
+          <li><button id="logoutBtn">Logout</button></li>
+        </ul>
+      </nav>
+      <main id="mainContent"></main>
     </div>
   `;
 
-  const loginForm = document.querySelector<HTMLFormElement>('#loginForm');
-  if (loginForm) {
-    loginForm.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const formData = new FormData(loginForm);
-      const usernameInput = formData.get('username') as string;
-      const passwordInput = formData.get('password') as string;
+  const homeBtn = document.querySelector<HTMLButtonElement>('#navHome');
+  homeBtn?.addEventListener('click', renderGallery);
 
-      try {
-        const response = await fetch('http://localhost:8000/login.php', {
-          method: 'POST',
-          credentials: 'include',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            username: usernameInput,
-            password: passwordInput
-          })
-        });
+  const galleryBtn = document.querySelector<HTMLButtonElement>('#navGallery');
+  galleryBtn?.addEventListener('click', renderOwnGallery);
 
-        if (response.ok) {
-          username = usernameInput;
-          renderLoggedIn();
-        } else {
-          const errorText = await response.text();
-          const errorElement = document.querySelector<HTMLParagraphElement>('#error');
-          if (errorElement) {
-            try {
-              const errorData = JSON.parse(errorText);
-              errorElement.textContent = errorData.error || 'Login fehlgeschlagen';
-            } catch {
-              errorElement.textContent = 'Unbekannter Fehler: ' + errorText;
-            }
-          }
-        }
-      } catch (error) {
-        const errorElement = document.querySelector<HTMLParagraphElement>('#error');
-        if (errorElement) {
-          errorElement.textContent = 'Netzwerkfehler oder Server nicht erreichbar: ' + (error as Error).message;
-        }
-      }
+  const uploadBtn = document.querySelector<HTMLButtonElement>('#navUpload');
+  uploadBtn?.addEventListener('click', renderUploadForm);
+
+  const profileBtn = document.querySelector<HTMLButtonElement>('#navProfile');
+  profileBtn?.addEventListener('click', renderProfile);
+
+  const logoutBtn = document.querySelector<HTMLButtonElement>('#logoutBtn');
+  logoutBtn?.addEventListener('click', async () => {
+    await fetch('http://localhost:8000/logout.php', {
+      credentials: 'include'
     });
-  }
+    username = '';
+    renderLoginForm(); // Nach Logout direkt wieder Login anzeigen
+  });
 
-  const registerBtn = document.querySelector<HTMLButtonElement>('#registerBtn');
-  if (registerBtn) {
-    registerBtn.addEventListener('click', () => {
-      window.location.href = '/register.html';
-    });
-  }
+  renderGallery();
 }
 
-function renderLoggedIn() {
-  appDiv!.innerHTML = `
-    <div>
-      <h1>Willkommen, ${username}!</h1>
-      <button id="logoutBtn">Logout</button>
-      <div id="gallery">
-        <h2>Pexels Bilder Galerie</h2>
-        <div id="imagesContainer">Lade Bilder...</div>
+function renderLoginForm() {
+  appDiv.innerHTML = `
+    <div class="centered-container">
+      <div class="login-box">
+        <h1>Login</h1>
+        <form id="loginForm">
+          <label for="username">Benutzername:</label>
+          <input type="text" id="username" name="username" required><br>
+          <label for="password">Passwort:</label>
+          <input type="password" id="password" name="password" required><br>
+          <button type="submit">Login</button>
+        </form>
+        <p id="error" style="color:red;"></p>
       </div>
     </div>
   `;
 
-  const logoutBtn = document.querySelector<HTMLButtonElement>('#logoutBtn');
-  if (logoutBtn) {
-    logoutBtn.addEventListener('click', async () => {
-      try {
-        await fetch('http://localhost:8000/logout.php', {
-          credentials: 'include'
-        });
-      } catch {
-        // Ignorieren
+  const loginForm = document.querySelector<HTMLFormElement>('#loginForm');
+  loginForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(loginForm);
+    const usernameInput = formData.get('username') as string;
+    const passwordInput = formData.get('password') as string;
+
+    try {
+      const response = await fetch('http://localhost:8000/login.php', {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: usernameInput,
+          password: passwordInput
+        })
+      });
+
+      if (response.ok) {
+        username = usernameInput;
+        renderLayout();
+      } else {
+        const errorData = await response.json();
+        const errorElement = document.querySelector<HTMLParagraphElement>('#error');
+        if (errorElement) {
+          errorElement.textContent = errorData.error || 'Login fehlgeschlagen';
+        }
       }
-      username = '';
-      renderLoginForm();
-    });
-  }
+    } catch (error) {
+      const errorElement = document.querySelector<HTMLParagraphElement>('#error');
+      if (errorElement) {
+        errorElement.textContent = 'Serverfehler: ' + (error as Error).message;
+      }
+    }
+  });
+}
+
+function renderGallery() {
+  const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
+  if (!mainContent) return;
+
+  mainContent.innerHTML = `
+    <h1>Galerie</h1>
+    <div id="imagesContainer">Lade Bilder...</div>
+  `;
 
   loadPexelsImages();
 }
@@ -123,33 +124,39 @@ async function loadPexelsImages() {
 
     if (!response.ok) {
       const errorText = await response.text();
-      try {
-        const errorData = JSON.parse(errorText);
-        imagesContainer.textContent = errorData.error || 'Fehler beim Laden der Bilder';
-      } catch {
-        imagesContainer.textContent = 'Unbekannter Fehler: ' + errorText;
-      }
+      imagesContainer.textContent = errorText;
       return;
     }
 
     const data = await response.json();
     const images = data.images;
 
-    imagesContainer.innerHTML = images
-      .map(
-        (img: any) => `
-          <div class="image-card">
-            <img src="${img.src}" alt="Bild von ${img.photographer}">
-            <p>Fotograf: ${img.photographer}</p>
-            <a href="${img.url}" target="_blank">Original ansehen</a>
-          </div>
-        `
-      )
-      .join('');
+    imagesContainer.innerHTML = images.map((img: any) => `
+      <div class="image-card">
+        <img src="${img.src}" alt="Bild von ${img.photographer}">
+        <p>Fotograf: ${img.photographer}</p>
+        <a href="${img.url}" target="_blank">Original ansehen</a>
+      </div>
+    `).join('');
   } catch (error) {
-    imagesContainer.textContent = 'Netzwerkfehler oder Server nicht erreichbar: ' + (error as Error).message;
+    imagesContainer.textContent = 'Fehler beim Laden der Bilder.';
   }
 }
 
-// Initial-Render
+function renderOwnGallery() {
+  const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
+  mainContent!.innerHTML = '<h1>Meine Galerie</h1><p>Hier kommen deine eigenen Bilder hin!</p>';
+}
+
+function renderUploadForm() {
+  const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
+  mainContent!.innerHTML = '<h1>Bilder hochladen</h1><p>Upload-Formular folgt noch.</p>';
+}
+
+function renderProfile() {
+  const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
+  mainContent!.innerHTML = '<h1>Profil</h1><p>Hier kannst du dein Profil bearbeiten.</p>';
+}
+
+// Initial Start
 renderLoginForm();

@@ -10,9 +10,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Session starten
-session_name('MYSESSIONID');
-// optional, falls du einen anderen Namen willst
+session_name('PHPSESSID');
 session_start();
+$_SESSION['user_id'] = $user['id']; // nach erfolgreichem Login
+
+setcookie('PHPSESSID', session_id(), [
+    'expires' => time() + 3600,
+    'path' => '/',
+    'secure' => false, // true bei HTTPS
+    'httponly' => true,
+    'samesite' => 'Lax'
+]);
+
+
+echo json_encode(['message' => 'Login erfolgreich']);
+
 header('Content-Type: application/json');
 // Prüfen, ob POST-Request
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {

@@ -156,7 +156,85 @@ function renderUploadForm() {
 
 function renderProfile() {
   const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
-  mainContent!.innerHTML = '<h1>Profil</h1><p>Hier kannst du dein Profil bearbeiten.</p>';
+  if (!mainContent) return;
+
+  mainContent.innerHTML = `<h1>Profil</h1><p>Lade Profildaten...</p>`;
+
+  fetch('http://localhost:8000/profile.php', {
+    method: 'GET',
+    credentials: 'include'
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        const errorText = await response.text();
+        mainContent.innerHTML = `<p style="color:red;">${errorText}</p>`;
+        return;
+      }
+
+      const data = await response.json();
+      const user = data.user;
+
+      mainContent.innerHTML = `
+        <h1>Profil bearbeiten</h1>
+        <form id="profileForm">
+          <label for="username">Benutzername:</label>
+          <input type="text" id="username" name="username" value="${user.username}" required><br>
+          <label for="name">Name:</label>
+          <input type="text" id="name" name="name" value="${user.name}" required><br>
+          <label for="age">Alter:</label>
+          <input type="number" id="age" name="age" value="${user.age}" required><br>
+          <label for="password">Passwort ändern:</label>
+          <input type="password" id="password" name="password"><br>
+          <button type="submit">Speichern</button>
+        </form>
+        <p id="profileMessage" style="color:green;"></p>
+      `;
+
+      const profileForm = document.querySelector<HTMLFormElement>('#profileForm');
+      profileForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(profileForm);
+        const updatedUser = {
+          username: formData.get('username') as string,
+          name: formData.get('name') as string,
+          age: Number(formData.get('age')),
+          password: formData.get('password') as string
+        };
+
+        try {
+          const response = await fetch('http://localhost:8000/profile.php', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(updatedUser)
+          });
+
+          if (response.ok) {
+            const msgElement = document.querySelector<HTMLParagraphElement>('#profileMessage');
+            if (msgElement) {
+              msgElement.textContent = 'Profil erfolgreich aktualisiert!';
+            }
+          } else {
+            const errorData = await response.json();
+            const msgElement = document.querySelector<HTMLParagraphElement>('#profileMessage');
+            if (msgElement) {
+              msgElement.textContent = errorData.error || 'Fehler beim Aktualisieren';
+              msgElement.style.color = 'red';
+            }
+          }
+        } catch (error) {
+          const msgElement = document.querySelector<HTMLParagraphElement>('#profileMessage');
+          if (msgElement) {
+            msgElement.textContent = 'Serverfehler: ' + (error as Error).message;
+            msgElement.style.color = 'red';
+          }
+        }
+      });
+    })
+    .catch((error) => {
+      mainContent.innerHTML = `<p style="color:red;">Serverfehler: ${error}</p>`;
+    });
 }
 
 // Initial Start

@@ -1,30 +1,155 @@
-// src/main.ts
-
-// Beispiel-Imports
 import './style.css';
 
-// Hole das App-Div aus dem DOM
-const appDiv = document.getElementById('app');
+const appDiv = document.querySelector<HTMLDivElement>('#app');
+if (!appDiv) {
+  throw new Error('Kein #app Element gefunden');
+}
 
-if (appDiv) {
-  // Beispiel: Setze etwas HTML rein
-  appDiv.innerHTML = `
-    <h1>Hello, World!</h1>
-    <p>Willkommen in meiner App.</p>
+// Ab hier weiß TypeScript: appDiv ist **definitiv** vorhanden
+let username = '';
+
+function renderLoginForm() {
+  appDiv!.innerHTML = `
+    <div>
+      <h1>Login</h1>
+      <form id="loginForm">
+        <div>
+          <label for="username">Benutzername:</label>
+          <input type="text" id="username" name="username" required>
+        </div>
+        <div>
+          <label for="password">Passwort:</label>
+          <input type="password" id="password" name="password" required>
+        </div>
+        <button type="submit">Login</button>
+      </form>
+      <button id="registerBtn">Registrieren</button>
+      <p id="error" style="color: red;"></p>
+    </div>
   `;
 
-  // Beispiel: Füge dynamisch ein weiteres Element hinzu
-  const childElement = document.createElement('div');
-  childElement.textContent = 'Dies ist ein dynamisches Element.';
-  appDiv.appendChild(childElement);
+  const loginForm = document.querySelector<HTMLFormElement>('#loginForm');
+  if (loginForm) {
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const formData = new FormData(loginForm);
+      const usernameInput = formData.get('username') as string;
+      const passwordInput = formData.get('password') as string;
 
-  // Optional: Event Listener
-  const button = document.createElement('button');
-  button.textContent = 'Klick mich!';
-  button.addEventListener('click', () => {
-    alert('Button geklickt!');
-  });
-  appDiv.appendChild(button);
-} else {
-  console.error("Element mit ID 'app' nicht gefunden.");
+      try {
+        const response = await fetch('http://localhost:8000/login.php', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            username: usernameInput,
+            password: passwordInput
+          })
+        });
+
+        if (response.ok) {
+          username = usernameInput;
+          renderLoggedIn();
+        } else {
+          const errorText = await response.text();
+          const errorElement = document.querySelector<HTMLParagraphElement>('#error');
+          if (errorElement) {
+            try {
+              const errorData = JSON.parse(errorText);
+              errorElement.textContent = errorData.error || 'Login fehlgeschlagen';
+            } catch {
+              errorElement.textContent = 'Unbekannter Fehler: ' + errorText;
+            }
+          }
+        }
+      } catch (error) {
+        const errorElement = document.querySelector<HTMLParagraphElement>('#error');
+        if (errorElement) {
+          errorElement.textContent = 'Netzwerkfehler oder Server nicht erreichbar: ' + (error as Error).message;
+        }
+      }
+    });
+  }
+
+  const registerBtn = document.querySelector<HTMLButtonElement>('#registerBtn');
+  if (registerBtn) {
+    registerBtn.addEventListener('click', () => {
+      window.location.href = '/register.html';
+    });
+  }
 }
+
+function renderLoggedIn() {
+  appDiv!.innerHTML = `
+    <div>
+      <h1>Willkommen, ${username}!</h1>
+      <button id="logoutBtn">Logout</button>
+      <div id="gallery">
+        <h2>Pexels Bilder Galerie</h2>
+        <div id="imagesContainer">Lade Bilder...</div>
+      </div>
+    </div>
+  `;
+
+  const logoutBtn = document.querySelector<HTMLButtonElement>('#logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async () => {
+      try {
+        await fetch('http://localhost:8000/logout.php', {
+          credentials: 'include'
+        });
+      } catch {
+        // Ignorieren
+      }
+      username = '';
+      renderLoginForm();
+    });
+  }
+
+  loadPexelsImages();
+}
+
+async function loadPexelsImages() {
+  const imagesContainer = document.querySelector<HTMLDivElement>('#imagesContainer');
+  if (!imagesContainer) return;
+
+  try {
+    const response = await fetch('http://localhost:8000/getPexelsImages.php', {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const errorData = JSON.parse(errorText);
+        imagesContainer.textContent = errorData.error || 'Fehler beim Laden der Bilder';
+      } catch {
+        imagesContainer.textContent = 'Unbekannter Fehler: ' + errorText;
+      }
+      return;
+    }
+
+    const data = await response.json();
+    const images = data.images;
+
+    imagesContainer.innerHTML = images
+      .map(
+        (img: any) => `
+          <div class="image-card">
+            <img src="${img.src}" alt="Bild von ${img.photographer}">
+            <p>Fotograf: ${img.photographer}</p>
+            <a href="${img.url}" target="_blank">Original ansehen</a>
+          </div>
+        `
+      )
+      .join('');
+  } catch (error) {
+    imagesContainer.textContent = 'Netzwerkfehler oder Server nicht erreichbar: ' + (error as Error).message;
+  }
+}
+
+// Initial-Render
+renderLoginForm();

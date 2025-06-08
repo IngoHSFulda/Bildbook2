@@ -8,7 +8,6 @@ if (!appDiv) {
 let username = '';
 
 function renderLoginForm() {
-  if (!appDiv) return;
   appDiv.innerHTML = `
     <div>
       <h1>Login</h1>
@@ -39,7 +38,7 @@ function renderLoginForm() {
       try {
         const response = await fetch('http://localhost:8000/login.php', {
           method: 'POST',
-          credentials: 'include', // wichtig für Session-Cookies
+          credentials: 'include',
           headers: {
             'Content-Type': 'application/json'
           },
@@ -82,11 +81,14 @@ function renderLoginForm() {
 }
 
 function renderLoggedIn() {
-  if (!appDiv) return;
   appDiv.innerHTML = `
     <div>
       <h1>Willkommen, ${username}!</h1>
       <button id="logoutBtn">Logout</button>
+      <div id="gallery">
+        <h2>Pexels Bilder Galerie</h2>
+        <div id="imagesContainer">Lade Bilder...</div>
+      </div>
     </div>
   `;
 
@@ -103,6 +105,48 @@ function renderLoggedIn() {
       username = '';
       renderLoginForm();
     });
+  }
+
+  loadPexelsImages();
+}
+
+async function loadPexelsImages() {
+  const imagesContainer = document.querySelector<HTMLDivElement>('#imagesContainer');
+  if (!imagesContainer) return;
+
+  try {
+    const response = await fetch('http://localhost:8000/getPexelsImages.php', {
+      method: 'GET',
+      credentials: 'include'
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      try {
+        const errorData = JSON.parse(errorText);
+        imagesContainer.textContent = errorData.error || 'Fehler beim Laden der Bilder';
+      } catch {
+        imagesContainer.textContent = 'Unbekannter Fehler: ' + errorText;
+      }
+      return;
+    }
+
+    const data = await response.json();
+    const images = data.images;
+
+    imagesContainer.innerHTML = images
+      .map(
+        (img: any) => `
+          <div class="image-card">
+            <img src="${img.src}" alt="Bild von ${img.photographer}">
+            <p>Fotograf: ${img.photographer}</p>
+            <a href="${img.url}" target="_blank">Original ansehen</a>
+          </div>
+        `
+      )
+      .join('');
+  } catch (error) {
+    imagesContainer.textContent = 'Netzwerkfehler oder Server nicht erreichbar: ' + (error as Error).message;
   }
 }
 

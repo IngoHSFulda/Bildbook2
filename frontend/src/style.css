@@ -81,6 +81,25 @@ button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
 }
+.image-card {
+  display: inline-block;
+  margin: 10px;
+  text-align: center;
+  max-width: 200px;
+}
+
+.image-card img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+#imagesContainer {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  justify-content: center;
+}
+
 
 @media (prefers-color-scheme: light) {
   :root {

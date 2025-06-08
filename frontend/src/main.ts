@@ -3,10 +3,10 @@ import './style.css';
 const appDiv = document.querySelector<HTMLDivElement>('#app');
 if (!appDiv) throw new Error('Kein #app Element gefunden');
 
-let username = '';
+let username: string | null = null;
 
 function renderLayout() {
-  appDiv.innerHTML = `
+  appDiv!.innerHTML = `
     <div id="container">
       <nav id="sidebar">
         <h2>Navigation</h2>
@@ -40,14 +40,15 @@ function renderLayout() {
       credentials: 'include'
     });
     username = '';
-    renderLoginForm(); // Nach Logout direkt wieder Login anzeigen
+    renderLoginForm();
   });
 
+  console.log(`Aktueller Benutzer: ${username}`);
   renderGallery();
 }
 
 function renderLoginForm() {
-  appDiv.innerHTML = `
+  appDiv!.innerHTML = `
     <div class="centered-container">
       <div class="login-box">
         <h1>Login</h1>

@@ -4,6 +4,85 @@ const appDiv = document.querySelector<HTMLDivElement>('#app');
 if (!appDiv) throw new Error('Kein #app Element gefunden');
 
 let username: string | null = null;
+// Suche nach doppelten Definitionen
+// Entferne die alte Version von renderUploadForm, zum Beispiel:
+// function renderUploadForm() {
+//     const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
+//     mainContent!.innerHTML = '<h1>Bilder hochladen</h1><p>Upload-Formular folgt noch.</p>';
+// }
+
+// Upload-Formular aktualisieren, sodass das Bild direkt darunter angezeigt wird
+// Ersetze die bestehende renderUploadForm Funktion durch diese:
+// Upload-Formular aktualisieren, sodass das Bild direkt darunter angezeigt wird
+function renderUploadForm() {
+  const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
+  if (!mainContent) return;
+
+  mainContent.innerHTML = `
+    <h1>Bilder hochladen</h1>
+    <form id="uploadForm" enctype="multipart/form-data">
+      <label for="image">Bild auswählen:</label><br>
+      <input type="file" name="image" id="image" accept="image/*" required><br><br>
+      <button type="submit">Hochladen</button>
+    </form>
+    <p id="uploadMessage" style="color: green;"></p>
+    <div id="uploadedImageContainer"></div>
+  `;
+
+  const uploadForm = document.querySelector<HTMLFormElement>('#uploadForm');
+  const uploadMessage = document.querySelector<HTMLParagraphElement>('#uploadMessage');
+  const imageContainer = document.querySelector<HTMLDivElement>('#uploadedImageContainer');
+
+  uploadForm?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    const formData = new FormData(uploadForm);
+
+    try {
+      const response = await fetch('http://localhost:8000/upload.php', {
+        method: 'POST',
+        credentials: 'include',
+        body: formData
+      });
+
+      const text = await response.text();
+
+      let result;
+      try {
+        result = JSON.parse(text);
+      } catch {
+        if (uploadMessage) {
+          uploadMessage.textContent = 'Ungültige Serverantwort: ' + text;
+          uploadMessage.style.color = 'red';
+        }
+        return;
+      }
+
+      if (response.ok) {
+        if (uploadMessage) {
+          uploadMessage.textContent = 'Bild erfolgreich hochgeladen!';
+          uploadMessage.style.color = 'green';
+        }
+
+        if (result.path && imageContainer) {
+          const imageUrl = `http://localhost:8000/uploads/${result.path}`;
+          imageContainer.innerHTML = `<img src="${imageUrl}" alt="Hochgeladenes Bild" style="max-width: 300px; margin-top: 10px;" />`;
+        }
+      } else {
+        if (uploadMessage) {
+          uploadMessage.textContent = result.error || 'Fehler beim Upload';
+          uploadMessage.style.color = 'red';
+        }
+      }
+    } catch (error) {
+      if (uploadMessage) {
+        uploadMessage.textContent = 'Serverfehler: ' + (error as Error).message;
+        uploadMessage.style.color = 'red';
+      }
+    }
+  });
+}
+
 
 function renderLayout() {
   appDiv!.innerHTML = `
@@ -147,11 +226,6 @@ async function loadPexelsImages() {
 function renderOwnGallery() {
   const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
   mainContent!.innerHTML = '<h1>Meine Galerie</h1><p>Hier kommen deine eigenen Bilder hin!</p>';
-}
-
-function renderUploadForm() {
-  const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
-  mainContent!.innerHTML = '<h1>Bilder hochladen</h1><p>Upload-Formular folgt noch.</p>';
 }
 
 function renderProfile() {

@@ -4,15 +4,15 @@ header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
 }
 
-// Session starten
-session_name('PHPSESSID');
+session_name('PHPSESSID'); // optional
 session_start();
-$_SESSION['user_id'] = $user['id']; // nach erfolgreichem Login
+header('Content-Type: application/json');
 
 setcookie('PHPSESSID', session_id(), [
     'expires' => time() + 3600,

@@ -13,13 +13,16 @@ try {
         exit;
     }
 
-    session_name('MYSESSIONID');
-    session_start();
-    if ($_SERVER['REQUEST_METHOD'] !== 'GET') {
-        http_response_code(405);
-        echo json_encode(['error' => 'Nur GET-Requests erlaubt']);
-        exit;
-    }
+ session_name('PHPSESSID');
+session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
+    echo json_encode(['error' => 'Nicht autorisiert']);
+    exit;
+}
+
+
 
     if (empty($_SESSION['user_id'])) {
         http_response_code(401);

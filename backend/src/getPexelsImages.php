@@ -13,14 +13,14 @@ try {
         exit;
     }
 
- session_name('PHPSESSID');
-session_start();
+    session_name('PHPSESSID');
+    session_start();
 
-if (!isset($_SESSION['user_id'])) {
-    http_response_code(401);
-    echo json_encode(['error' => 'Nicht autorisiert']);
-    exit;
-}
+    if (!isset($_SESSION['user_id'])) {
+        http_response_code(401);
+        echo json_encode(['error' => 'Nicht autorisiert']);
+        exit;
+    }
 
 
 

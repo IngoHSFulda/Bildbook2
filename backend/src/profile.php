@@ -1,10 +1,10 @@
 <?php
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Methods: GET, POST, OPTIONS');
-
 // OPTIONS-Request nur bestätigen
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -12,9 +12,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 // Session starten
-session_name('PHPSESSID'); // Einheitlich verwenden
+session_name('PHPSESSID');
+// Einheitlich verwenden
 session_start();
-
 // Prüfen ob eingeloggt
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
@@ -32,7 +32,6 @@ if (!$db) {
 }
 
 $user_id = $_SESSION['user_id'];
-
 // GET: Benutzerprofil abrufen
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     try {
@@ -65,9 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $name = isset($data['name']) ? trim($data['name']) : null;
     $age = isset($data['age']) ? intval($data['age']) : null;
     $password = isset($data['password']) ? trim($data['password']) : null;
-
     try {
-        // Prüfen, ob der Benutzername bereits vergeben ist (außer vom eigenen Benutzer)
+    // Prüfen, ob der Benutzername bereits vergeben ist (außer vom eigenen Benutzer)
         if ($username) {
             $checkStmt = $db->prepare("SELECT id FROM users WHERE username = :username AND id != :id");
             $checkStmt->execute([':username' => $username, ':id' => $user_id]);
@@ -107,7 +105,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $sql = 'UPDATE users SET ' . implode(', ', $fields) . ' WHERE id = :id';
         $stmt = $db->prepare($sql);
         $stmt->execute($params);
-
         echo json_encode(['message' => 'Benutzerprofil aktualisiert']);
     } catch (PDOException $e) {
         http_response_code(500);

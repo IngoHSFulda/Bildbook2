@@ -14,6 +14,8 @@ let username: string | null = null;
 // Upload-Formular aktualisieren, sodass das Bild direkt darunter angezeigt wird
 // Ersetze die bestehende renderUploadForm Funktion durch diese:
 // Upload-Formular aktualisieren, sodass das Bild direkt darunter angezeigt wird
+
+
 function renderUploadForm() {
   const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
   if (!mainContent) return;
@@ -226,8 +228,49 @@ async function loadPexelsImages() {
 
 function renderOwnGallery() {
   const mainContent = document.querySelector<HTMLDivElement>('#mainContent');
-  mainContent!.innerHTML = '<h1>Meine Galerie</h1><p>Hier kommen deine eigenen Bilder hin!</p>';
+  if (!mainContent) return;
+
+  mainContent.innerHTML = `
+    <h1>Meine Galerie</h1>
+    <div id="ownImagesContainer">Lade eigene Bilder...</div>
+  `;
+
+  fetch('http://localhost:8000/get_images.php', {
+    method: 'GET',
+    credentials: 'include'
+  })
+    .then(async (response) => {
+      const container = document.getElementById('ownImagesContainer');
+      if (!container) return;
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        container.innerHTML = `<p style="color:red;">${errorText}</p>`;
+        return;
+      }
+
+      const data = await response.json();
+      if (!data.images.length) {
+        container.innerHTML = '<p>Du hast noch keine Bilder hochgeladen.</p>';
+        return;
+      }
+
+      container.innerHTML = data.images.map((img: any) => `
+        <div class="own-image-card">
+          <img src="http://localhost:8000/uploads/${img.filename}" alt="${img.name}" />
+          <h3>${img.name}</h3>
+          <p>${img.description}</p>
+        </div>
+      `).join('');
+    })
+    .catch((error) => {
+      const container = document.getElementById('ownImagesContainer');
+      if (container) {
+        container.innerHTML = `<p style="color:red;">Fehler: ${error}</p>`;
+      }
+    });
 }
+
 
 function renderProfile() {
   const mainContent = document.querySelector<HTMLDivElement>('#mainContent');

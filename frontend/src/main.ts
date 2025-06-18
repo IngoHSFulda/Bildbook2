@@ -21,10 +21,18 @@ function renderUploadForm() {
   mainContent.innerHTML = `
     <h1>Bilder hochladen</h1>
     <form id="uploadForm" enctype="multipart/form-data">
+      <label for="name">Bildname:</label><br>
+      <input type="text" id="name" name="name" required><br><br>
+
+      <label for="description">Beschreibung:</label><br>
+      <textarea id="description" name="description" rows="3"></textarea><br><br>
+
       <label for="image">Bild auswählen:</label><br>
       <input type="file" name="image" id="image" accept="image/*" required><br><br>
+
       <button type="submit">Hochladen</button>
     </form>
+
     <p id="uploadMessage" style="color: green;"></p>
     <div id="uploadedImageContainer"></div>
   `;
@@ -45,19 +53,7 @@ function renderUploadForm() {
         body: formData
       });
 
-      const text = await response.text();
-
-      let result;
-      try {
-        result = JSON.parse(text);
-      } catch {
-        if (uploadMessage) {
-          uploadMessage.textContent = 'Ungültige Serverantwort: ' + text;
-          uploadMessage.style.color = 'red';
-        }
-        return;
-      }
-
+      const result = await response.json();
       if (response.ok) {
         if (uploadMessage) {
           uploadMessage.textContent = 'Bild erfolgreich hochgeladen!';
@@ -66,7 +62,11 @@ function renderUploadForm() {
 
         if (result.path && imageContainer) {
           const imageUrl = `http://localhost:8000/uploads/${result.path}`;
-          imageContainer.innerHTML = `<img src="${imageUrl}" alt="Hochgeladenes Bild" style="max-width: 300px; margin-top: 10px;" />`;
+          imageContainer.innerHTML = `
+            <h3>${formData.get('name')}</h3>
+            <p>${formData.get('description')}</p>
+            <img src="${imageUrl}" alt="Hochgeladenes Bild" style="max-width: 300px; margin-top: 10px;" />
+          `;
         }
       } else {
         if (uploadMessage) {
@@ -82,6 +82,7 @@ function renderUploadForm() {
     }
   });
 }
+
 
 
 function renderLayout() {

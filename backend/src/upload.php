@@ -5,6 +5,7 @@ header('Access-Control-Allow-Origin: http://localhost:5173');
 header('Access-Control-Allow-Credentials: true');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Access-Control-Allow-Methods: POST, OPTIONS');
+
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit;
@@ -12,6 +13,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 session_name('PHPSESSID');
 session_start();
+
 if (!isset($_SESSION['user_id'])) {
     http_response_code(401);
     echo json_encode(['error' => 'Nicht autorisiert']);
@@ -35,7 +37,8 @@ $originalName = basename($_FILES['image']['name']);
 $uploadDir = realpath(__DIR__) . '/uploads';
 $uniqueName = uniqid() . '_' . $originalName;
 $targetFile = $uploadDir . '/' . $uniqueName;
-// Verzeichnis erstellen, wenn es nicht existiert
+
+// Sicherstellen, dass das Upload-Verzeichnis existiert
 if (!is_dir($uploadDir)) {
     if (!mkdir($uploadDir, 0755, true)) {
         http_response_code(500);
@@ -56,8 +59,36 @@ if (!move_uploaded_file($tmpFile, $targetFile)) {
     exit;
 }
 
-// Erfolgsmeldung mit Dateiname zur Nutzung im Frontend
+// Zusatzdaten erfassen
+$name = isset($_POST['name']) ? trim($_POST['name']) : '';
+$description = isset($_POST['description']) ? trim($_POST['description']) : '';
+$userId = $_SESSION['user_id'];
+
+// In die Datenbank eintragen
+try {
+    $pdo = new PDO('mysql:host=localhost;dbname=bildbook;charset=utf8mb4', 'root', '');
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    $stmt = $pdo->prepare('
+        INSERT INTO images (user_id, filename, name, description, uploaded_at)
+        VALUES (:user_id, :filename, :name, :description, NOW())
+    ');
+    $stmt->execute([
+        ':user_id' => $userId,
+        ':filename' => $uniqueName,
+        ':name' => $name,
+        ':description' => $description
+    ]);
+} catch (PDOException $e) {
+    http_response_code(500);
+    echo json_encode(['error' => 'Fehler beim Speichern in der Datenbank: ' . $e->getMessage()]);
+    exit;
+}
+
+// Erfolgsmeldung zurückgeben
 echo json_encode([
     'message' => 'Bild erfolgreich hochgeladen',
-    'path' => $uniqueName
+    'path' => $uniqueName,
+    'name' => $name,
+    'description' => $description
 ]);

@@ -1,50 +1,43 @@
 # 📷 BildBook
 
-**BildBook** ist eine einfache Webanwendung zum Hochladen und Verwalten von Bildern. Nutzer können sich anmelden, Bilder mit Titel und Beschreibung hochladen und ihre persönliche Galerie einsehen. Ideal als Grundlage für ein Bilder- oder Medienverwaltungssystem.
+**BildBook** ist eine Webanwendung zum Hochladen und Verwalten persönlicher Bilder.  
+Nutzer können sich registrieren, Bilder mit Titel und Beschreibung hochladen und in einer eigenen Galerie verwalten.
+
+---
+
+## 🌐 Live-Demo
+
+- **Frontend:** [http://localhost:5173](http://localhost:5173)  
+- **Backend:** [http://localhost:8000](http://localhost:8000)
 
 ---
 
 ## 🧰 Technologien
 
-- **Frontend:** TypeScript, Vite, HTML, CSS  
-- **Backend:** PHP (mit Sessions)  
-- **Datenbank:** SQLite  
-- **Bildspeicherung:** Lokaler Server-Ordner (`uploads/`)
+- Frontend: TypeScript, Vite, HTML, CSS, Fetch API  
+- Backend: PHP 8 mit Sessions, SQLite  
+- Speicherung: Lokale Bilder in `backend/src/uploads/` (aus `.gitignore` ausgeschlossen)
 
 ---
 
 ## 🚀 Features
 
-- 🔐 Benutzer-Login mit Session-Handling  
-- 🖼️ Bild-Upload mit Name & Beschreibung  
-- 🗃️ Speicherung der Bilddaten in SQLite  
-- 🧑‍🎨 Persönliche Galerie-Ansicht für eingeloggte Nutzer  
-- 🖥️ Moderne Benutzeroberfläche mit Navigation (Login, Galerie, Profil)  
-- 📂 Upload-Ordner wird **nicht** in Git eingecheckt (`uploads/` ist `.gitignore`-geschützt)
+- Login/Logout mit Session-Verwaltung  
+- Bilder hochladen inkl. Name & Beschreibung  
+- Galerieansicht pro Benutzer  
+- Speicherung der Bildinfos in SQLite  
+- Bilder sind nicht im Git-Repo
 
 ---
 
-## 🛠️ Setup
-
-### Voraussetzungen
-
-- PHP ≥ 8.0  
-- Node.js & npm  
-- SQLite3
-
----
-
-### 📦 Backend starten
+## ⚙️ Setup
 
 ```bash
+# Backend starten
 cd backend
 php -S localhost:8000 -t src
 
-
----
-
-### 📦 Backend starten
-
+# Frontend starten
 cd frontend
 npm install
 npm run dev

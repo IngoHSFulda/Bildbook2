@@ -42,6 +42,12 @@ cd frontend
 npm install
 npm run dev
 
+---
+
+## 📝 Lizenz
+
+
+```bash
 
 MIT License
 

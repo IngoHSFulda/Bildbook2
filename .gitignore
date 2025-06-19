@@ -3,6 +3,7 @@ backend/vendor/
 backend/.env
 backend/*.log
 backend/logs/
+backend/src/uploads/
 # Frontend (React)
 frontend/node_modules/
 frontend/.env

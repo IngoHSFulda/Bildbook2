@@ -26,8 +26,13 @@ try {
     $pdo = new PDO('mysql:host=localhost;dbname=bildbook;charset=utf8mb4', 'root', '');
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    $stmt = $pdo->prepare('SELECT id, filename, name, description, uploaded_at FROM images WHERE user_id = :user_id ORDER BY uploaded_at DESC');
-    $stmt->execute([':user_id' => $userId]);
+       $stmt = $pdo->prepare(
+           'SELECT id, filename, name, description, uploaded_at
+         FROM images
+         WHERE user_id = :user_id
+         ORDER BY uploaded_at DESC'
+       );
+     $stmt->execute([':user_id' => $userId]);
 
     $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

@@ -34,7 +34,6 @@ try {
     echo json_encode([
         'images' => $images
     ]);
-
 } catch (PDOException $e) {
     http_response_code(500);
     echo json_encode(['error' => 'Fehler beim Abrufen der Bilder: ' . $e->getMessage()]);

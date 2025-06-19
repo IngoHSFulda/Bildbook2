@@ -30,7 +30,6 @@ Nutzer können sich registrieren, Bilder mit Titel und Beschreibung hochladen un
 
 ---
 ## ⚙️ Setup
-
 ```bash
 # Backend starten
 cd backend
@@ -41,8 +40,8 @@ cd frontend
 npm install
 npm run dev
 
-
-📝 Lizenz
+```
+##  📝 Lizenz
 
 
 MIT License

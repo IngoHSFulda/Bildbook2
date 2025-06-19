@@ -29,7 +29,6 @@ Nutzer können sich registrieren, Bilder mit Titel und Beschreibung hochladen un
 - Bilder sind nicht im Git-Repo
 
 ---
-
 ## ⚙️ Setup
 
 ```bash
@@ -42,12 +41,9 @@ cd frontend
 npm install
 npm run dev
 
----
 
-## 📝 Lizenz
+📝 Lizenz
 
-
-```bash
 
 MIT License
 
@@ -58,3 +54,6 @@ Hiermit wird jeder Person, die eine Kopie dieser Software und der zugehörigen D
 Der obige Urheberrechtshinweis und dieser Genehmigungshinweis müssen in allen Kopien oder wesentlichen Teilen der Software enthalten sein.
 
 DIE SOFTWARE WIRD OHNE JEDE AUSDRÜCKLICHE ODER IMPLIZIERTE GARANTIE BEREITGESTELLT, EINSCHLIESSLICH DER GARANTIEN DER MARKTGÄNGIGKEIT, DER EIGNUNG FÜR EINEN BESTIMMTEN ZWECK UND DER NICHTVERLETZUNG. IN KEINEM FALL SIND DIE AUTOREN ODER COPYRIGHTINHABER FÜR JEGLICHEN SCHADEN ODER ANDERE HAFTUNGSANSPRÜCHE VERANTWORTLICH.
+
+
+
